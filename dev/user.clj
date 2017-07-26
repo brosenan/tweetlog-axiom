@@ -1,16 +1,14 @@
 (ns user
-  (:require [tweetlog.application]
-            [com.stuartsierra.component :as component]
+  (:require [com.stuartsierra.component :as component]
             [figwheel-sidecar.config :as fw-config]
             [figwheel-sidecar.system :as fw-sys]
             [clojure.tools.namespace.repl :refer [set-refresh-dirs]]
             [reloaded.repl :refer [system init]]
             [ring.middleware.reload :refer [wrap-reload]]
-            [figwheel-sidecar.repl-api :as figwheel]
-            [tweetlog.config :refer [config]]))
+            [figwheel-sidecar.repl-api :as figwheel]))
 
 (defn dev-system []
-  (assoc (tweetlog.application/app-system (config))
+  (assoc {}
     :figwheel-system (fw-sys/figwheel-system (fw-config/fetch-config))
     :css-watcher (fw-sys/css-watcher {:watch-paths ["resources/public/css"]})))
 
