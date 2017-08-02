@@ -6,32 +6,24 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.562" :scope "provided"]
-                 [com.cognitect/transit-clj "0.8.300"]
-                 [ring "1.6.1"]
-                 [ring/ring-defaults "0.3.0"]
-                 [bk/ring-gzip "0.2.1"]
-                 [lambdaisland/ring.middleware.logger "0.5.1"]
-                 [compojure "1.6.0"]
-                 [environ "1.1.0"]
-                 [com.stuartsierra/component "0.3.2"]
-                 [org.danielsz/system "0.4.0"]
-                 [org.clojure/tools.namespace "0.2.11"]
+                 [ring "1.6.1"] ;; Required for figwheel
                  [reagent "0.6.0"]
-                 [axiom-clj/axiom-cljs "MONOLITH-SNAPSHOT"]]
+                 [axiom-clj/permacode "0.2.1"]
+                 [axiom-clj/axiom-cljs "0.2.1"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]
-            [axiom-clj/lein-axiom "MONOLITH-SNAPSHOT"]]
+            [midje "1.8.3"]
+            [axiom-clj/lein-axiom "0.2.1"]
+            [axiom-clj/permacode "0.2.1"]]
 
   :min-lein-version "2.6.1"
 
-  :source-paths ["src/clj" "src/cljs" "src/cljc"]
+  :source-paths ["src/clj" "src/cljs"]
 
-  :test-paths ["test/clj" "test/cljc"]
+  :test-paths ["test/clj" "test/cljs"]
 
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
-
-  :uberjar-name "tweetlog.jar"
 
   ;; Use `lein run` if you just want to start a HTTP server, without figwheel
   :main tweetlog.application
@@ -43,7 +35,7 @@
 
   :cljsbuild {:builds
               [{:id "app"
-                :source-paths ["src/cljs" "src/cljc" "dev"]
+                :source-paths ["src/cljs" "dev"]
 
                 :figwheel {:on-jsload "tweetlog.system/reset"}
 
@@ -54,13 +46,13 @@
                            :source-map-timestamp true}}
 
                {:id "test"
-                :source-paths ["src/cljs" "test/cljs" "src/cljc" "test/cljc"]
+                :source-paths ["src/cljs" "test/cljs"]
                 :compiler {:output-to "resources/public/js/compiled/testable.js"
                            :main tweetlog.test-runner
                            :optimizations :none}}
 
                {:id "min"
-                :source-paths ["src/cljs" "src/cljc"]
+                :source-paths ["src/cljs"]
                 :jar true
                 :compiler {:main tweetlog.system
                            :output-to "resources/public/js/compiled/tweetlog.js"
@@ -104,52 +96,51 @@
                              [com.cemerick/piggieback "0.2.1"]
                              [org.clojure/tools.nrepl "0.2.13"]
                              [lein-doo "0.1.7"]
-                             [reloaded.repl "0.2.3"]]
+                             [reloaded.repl "0.2.3"]
+                             [midje "1.8.3"]
+                             [axiom-clj/cloudlog "0.2.1"]]
 
               :plugins [[lein-figwheel "0.5.10"]
                         [lein-doo "0.1.7"]]
 
-              :source-paths ["dev"]
-              :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}
+              :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}}}
+  
+  :axiom-run-config
+  {:zookeeper-config {:url "127.0.0.1:2181"}
+   :zk-plan-config {:num-threads 5
+                    :parent "/my-plans"}
+   :dynamodb-config {:access-key "STANDALONE-DB"
+                     :secret-key "XXYY"
+                     :endpoint "http://localhost:8006"}
+   :num-database-retriever-threads 1
+   :dynamodb-default-throughput {:read 1 :write 1}
+   :dynamodb-event-storage-num-threads 3
+   :migration-config {:number-of-shards 3
+                      :plan-prefix "/my-plans"
+                      :clone-location "/tmp"
+                      :clone-depth 10}
+   :local-storm-cluster true
+   :fact-spout {:include [:rabbitmq-config]}
+   :store-bolt {:include [:dynamodb-event-storage-num-threads
+                          :dynamodb-default-throughput
+                          :dynamodb-config]}
+   :output-bolt {:include [:rabbitmq-config]}
+   :initlal-link-bolt {:include [:storage-local-path
+                                 :storage-fetch-url]}
+   :link-bolt {:include [:storage-local-path
+                         :storage-fetch-url
+                         :dynamodb-config
+                         :dynamodb-default-throughput
+                         :num-database-retriever-threads]}
+   :use-dummy-authenticator true ;; Completely remove this entry to avoid the dummy authenticator
+   :dummy-version "dev-705491"
+   :http-config {:port 8080}}
 
-             :uberjar
-             {:source-paths ^:replace ["src/clj" "src/cljc"]
-              :prep-tasks ["compile"
-                           ["cljsbuild" "once" "min"]]
-              :hooks []
-              :omit-source true
-              :aot :all}}
-  :axiom-config {:zookeeper-config {:url "127.0.0.1:2181"}
-                 :zk-plan-config {:num-threads 5
-                                  :parent "/my-plans"}
-                 :dynamodb-config {:access-key "STANDALONE-DB"
-                                   :secret-key "XXYY"
-                                   :endpoint "http://localhost:8006"}
-                 :num-database-retriever-threads 1
-                 :dynamodb-default-throughput {:read 1 :write 1}
-                 :dynamodb-event-storage-num-threads 3
-                 :rabbitmq-config {:username "guest"
-                                   :password "guest"
-                                   :vhost "/"
-                                   :host "localhost"
-                                   :port 5672}
-                 :migration-config {:number-of-shards 3
-                                    :plan-prefix "/my-plans"
-                                    :clone-location "/tmp"
-                                    :clone-depth 10}
-                 :storage-local-path "/tmp/axiom-perms"
-                 :storage-fetch-url "https://s3.amazonaws.com/brosenan-test"
-                 :local-storm-cluster true
-                 :fact-spout {:include [:rabbitmq-config]}
-                 :store-bolt {:include [:dynamodb-event-storage-num-threads
-                                        :dynamodb-default-throughput
-                                        :dynamodb-config]}
-                 :output-bolt {:include [:rabbitmq-config]}
-                 :initlal-link-bolt {:include [:s3-config]}
-                 :link-bolt {:include [:s3-config
-                                       :dynamodb-config
-                                       :dynamodb-default-throughput
-                                       :num-database-retriever-threads]}
-                 :use-dummy-authenticator true ;; Completely remove this entry to avoid the dummy authenticator
-                 :dummy-version "dev-5490453"
-                 :http-config {:port 8080}})
+  :axiom-deploy-config
+  {:storage-local-path "/tmp/axiom-perms"
+   :storage-fetch-url "https://s3.amazonaws.com/brosenan-test"
+   :rabbitmq-config {:username "guest"
+                     :password "guest"
+                     :vhost "/"
+                     :host "localhost"
+                     :port 5672}})

@@ -4,3 +4,7 @@ h1 {
 li button {
     color: red;
 }
+.pane {
+    vertical-align: top;
+    padding: 1em;
+}
