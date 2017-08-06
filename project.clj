@@ -8,14 +8,14 @@
                  [org.clojure/clojurescript "1.9.562" :scope "provided"]
                  [ring "1.6.1"] ;; Required for figwheel
                  [reagent "0.6.0"]
-                 [axiom-clj/permacode "0.2.1"]
-                 [axiom-clj/axiom-cljs "0.2.1"]]
+                 [axiom-clj/permacode "MONOLITH-SNAPSHOT"]
+                 [axiom-clj/axiom-cljs "MONOLITH-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-environ "1.1.0"]
             [midje "1.8.3"]
-            [axiom-clj/lein-axiom "0.2.1"]
-            [axiom-clj/permacode "0.2.1"]]
+            [axiom-clj/lein-axiom "MONOLITH-SNAPSHOT"]
+            [axiom-clj/permacode "MONOLITH-SNAPSHOT"]]
 
   :min-lein-version "2.6.1"
 
@@ -98,7 +98,7 @@
                              [lein-doo "0.1.7"]
                              [reloaded.repl "0.2.3"]
                              [midje "1.8.3"]
-                             [axiom-clj/cloudlog "0.2.1"]]
+                             [axiom-clj/cloudlog "MONOLITH-SNAPSHOT"]]
 
               :plugins [[lein-figwheel "0.5.10"]
                         [lein-doo "0.1.7"]]
