@@ -2,7 +2,7 @@
   (:require [reagent.core :as reagent :refer [atom]]
             [axiom-cljs.core :as ax]
             [clojure.string :as str])
-  (:require-macros [axiom-cljs.macros :refer [defview defquery]]))
+  (:require-macros [axiom-cljs.macros :refer [defview defquery user]]))
 
 ;; This is so that prints will show in the brower's console.
 ;; Should be removed for production.
@@ -36,16 +36,16 @@
 ;; This function creates the tweets pane
 (defn tweets-pane []
   ;; The tweet-view function returns all tweets made by the user
-  (let [tweets (tweet-view @(:identity host))]
+  (let [tweets (tweet-view (user host))
+        {:keys [add]} (meta tweets)]
     ;; This is reagent's hickup-like syntax for generating HTML
     [:div
      [:h2 "Tweets"]
-     ;; When a button is clicked we call the view's :add method
+     ;; When a button is clicked we call the view's add method
      ;; and provide it a map containing all the fields we wish to put in a new (empty) tweet.
-     [:button {:on-click #((-> tweets meta :add) {:me @(:identity host)
-                                                  :text ""
-                                                  ;; The host has a :time method which tells the time...
-                                                  :ts ((:time host))})} "tweet!"]
+     [:button {:on-click #(add {:text ""
+                                ;; The host has a :time method which tells the time...
+                                :ts ((:time host))})} "tweet!"]
      [:ul
       ;; We now iterate over the results.
       ;; swap! and del! are functions that alow us to modify or delete this specific tweet.
@@ -58,8 +58,7 @@
          ;; and its :on-change callback uses the swap! function associated with this tweet
          ;; to modify the tweet's text every time the input field's text changes.
          [:input {:value text
-                  :on-change (update-field swap! :text)
-                  :style {:width "80%"}}]
+                  :on-change (update-field swap! :text)}]
          ;; The del! function deletes this tweet, so it can be used as the :on-click handler
          ;; of the delete button.
          [:button {:on-click del!} "X"]])]]))
@@ -80,7 +79,8 @@
   [:div
    [:h2 "Following"]
    ;; Query all the users the current user follows
-   (let [followees (following-view @(:identity host))]
+   (let [followees (following-view (user host))
+         {:keys [add]} followees]
      [:form
       ;; The name of a new user to follow.
       ;; This is simple reagent-style binding.
@@ -92,8 +92,7 @@
                :on-click #(do
                             ;; Add a "follows" relationship, between the current user and
                             ;; the user who's name was written in the input box, and
-                            ((-> followees meta :add) {:me @(:identity host)
-                                                       :followee @new-followee})
+                            (add {:followee @new-followee})
                             ;; Clear the input box.
                             (reset! new-followee ""))}]
       [:ul
@@ -135,7 +134,7 @@
                   ;; For each range...
                   (for [[to-days-ago from-days-ago] @day-ranges]
                     ;; Fetch all timeline entries (tweets by followed users) in the desired day range
-                    (for [{:keys [author tweet ts]} (timline-query @(:identity host)
+                    (for [{:keys [author tweet ts]} (timline-query (user host)
                                                                    (- (this-day) from-days-ago)
                                                                    (- (this-day) to-days-ago))]
                       [:li {:key ts}
@@ -147,10 +146,21 @@
                                    (conj ranges [to (+ to 3)]))))}
     "Show older..."]])
 
+(defview dbg [user day]
+  host
+  [:tweetlog.core/followee-tweets [user day] author tweet ts]
+  :store-in (atom nil))
+
+(defn dbg-pane []
+  [:ul
+   (for [{:keys [author tweet ts]} (dbg (user host) (this-day))]
+     [:li {:key tweet}
+      author ": " tweet " (" ts ")"])])
+
 ;; The main page function
 (defn twitting []
   [:div
-   [:h1 "Hi, " @(:identity host)]
+   [:h1 "Hi, " (user host)]
    [:table
     [:tbody
      [:tr.panes

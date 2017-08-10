@@ -98,7 +98,8 @@
                              [lein-doo "0.1.7"]
                              [reloaded.repl "0.2.3"]
                              [midje "1.8.3"]
-                             [axiom-clj/cloudlog "MONOLITH-SNAPSHOT"]]
+                             [axiom-clj/cloudlog "MONOLITH-SNAPSHOT"]
+                             [axiom-clj/cloudlog-events "MONOLITH-SNAPSHOT"]]
 
               :plugins [[lein-figwheel "0.5.10"]
                         [lein-doo "0.1.7"]]
@@ -109,12 +110,6 @@
   {:zookeeper-config {:url "127.0.0.1:2181"}
    :zk-plan-config {:num-threads 5
                     :parent "/my-plans"}
-   :dynamodb-config {:access-key "STANDALONE-DB"
-                     :secret-key "XXYY"
-                     :endpoint "http://localhost:8006"}
-   :num-database-retriever-threads 1
-   :dynamodb-default-throughput {:read 1 :write 1}
-   :dynamodb-event-storage-num-threads 3
    :migration-config {:number-of-shards 3
                       :plan-prefix "/my-plans"
                       :clone-location "/tmp"
@@ -143,4 +138,10 @@
                      :password "guest"
                      :vhost "/"
                      :host "localhost"
-                     :port 5672}})
+                     :port 5672}
+   :dynamodb-config {:access-key "STANDALONE-DB"
+                     :secret-key "XXYY"
+                     :endpoint "http://localhost:8006"}
+   :num-database-retriever-threads 1
+   :dynamodb-default-throughput {:read 1 :write 1}
+   :dynamodb-event-storage-num-threads 3})

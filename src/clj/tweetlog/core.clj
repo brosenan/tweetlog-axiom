@@ -16,4 +16,11 @@
    (let [day-range (range from-day to-day)])
    (when-not (> (count day-range) 20))
    (for [day day-range])
-   [followee-tweets [user day] author tweet ts]))
+   [followee-tweets [user day] author tweet ts])
+
+ (clg/defrule follower [user f]
+   [:tweetlog/follows f user] (clg/by f))
+ 
+ (clg/defclause f1
+   [:tweetlog/follower user -> f]
+   [follower user f]))
